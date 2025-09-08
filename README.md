@@ -14,15 +14,8 @@ A command line tool that launches a local React website with FastAPI backend.
 ## Installation
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd inkwell-internal
-
-# Build the frontend (required before installation)
-./build.sh
-
-# Install the package
-pip install -e .
+# Install directly from GitHub (pre-built)
+pip install git+https://github.com/soshhowell/inkwell.git
 ```
 
 ## Quick Start

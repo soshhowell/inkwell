@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Inkwell CLI - Convenient wrapper script
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Run the CLI with proper Python path
+PYTHONPATH="$SCRIPT_DIR" python3 "$SCRIPT_DIR/inkwell/cli/main.py" "$@"

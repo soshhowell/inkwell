@@ -1,0 +1,19 @@
+# Include important files in the package distribution
+include README.md
+include requirements.txt
+include build.sh
+
+# Include all frontend build files
+recursive-include inkwell/frontend/build *
+
+# Include Python source files
+recursive-include inkwell *.py
+
+# Exclude development and build artifacts
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .git*
+exclude frontend/node_modules
+recursive-exclude frontend/node_modules *
