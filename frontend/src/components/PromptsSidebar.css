@@ -1,0 +1,334 @@
+.prompts-sidebar {
+  position: fixed;
+  top: 60px; /* Below the header */
+  left: 0;
+  width: 300px;
+  height: calc(100vh - 60px);
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+}
+
+.prompts-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prompts-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.new-prompt-btn {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.new-prompt-btn:hover {
+  background: #5a67d8;
+}
+
+.prompts-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.prompts-loading {
+  padding: 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.no-prompts {
+  padding: 20px;
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+}
+
+.prompt-button {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  margin-bottom: 2px;
+  background: white;
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  color: #4a5568;
+  display: block;
+}
+
+.prompt-button:hover {
+  background: #f7fafc;
+  color: #2d3748;
+  border-left-color: #cbd5e0;
+}
+
+.prompt-button-selected {
+  background: #ebf8ff;
+  color: #667eea;
+  border-left-color: #667eea;
+  font-weight: 500;
+}
+
+.prompt-button-selected:hover {
+  background: #ebf8ff;
+  color: #667eea;
+}
+
+.prompt-button-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prompt-name {
+  flex: 1;
+  text-align: left;
+}
+
+.prompt-status {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-draft {
+  background: #fef2e2;
+  color: #92400e;
+}
+
+.status-active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-archived {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.prompt-project {
+  font-size: 0.7rem;
+  color: #718096;
+  margin-top: 2px;
+  padding: 2px 6px;
+  background: #f7fafc;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* Project Selector Styles */
+.project-selector {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.project-selector label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+}
+
+.project-selector-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.project-select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+  color: #4a5568;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.project-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.edit-project-btn {
+  padding: 8px;
+  background: #ed8936;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-project-btn:hover {
+  background: #dd6b20;
+}
+
+.new-project-btn {
+  padding: 8px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-project-btn:hover {
+  background: #5a67d8;
+}
+
+.new-project-form {
+  margin-top: 12px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.new-project-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.new-project-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.new-project-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.save-project-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-project-btn:hover {
+  background: #5a67d8;
+}
+
+.cancel-project-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancel-project-btn:hover {
+  background: #cbd5e0;
+}
+
+.project-filter-label {
+  font-weight: 400;
+  color: #718096;
+}
+
+/* Status Filter Tabs */
+.status-filters {
+  padding: 0 20px 16px 20px;
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.status-filter-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #f7fafc;
+  color: #718096;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.status-filter-btn:hover {
+  background: #edf2f7;
+  color: #4a5568;
+}
+
+.status-filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  font-weight: 600;
+}
+
+.status-filter-btn.active:hover {
+  background: #5a67d8;
+  border-color: #5a67d8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .prompts-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .prompts-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+}

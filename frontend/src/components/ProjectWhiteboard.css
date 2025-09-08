@@ -1,0 +1,182 @@
+.project-whiteboard {
+  position: fixed;
+  top: 60px; /* Below the header */
+  right: 0;
+  width: 350px;
+  height: calc(100vh - 60px);
+  background: white;
+  border-left: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  z-index: 998;
+}
+
+.whiteboard-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 60px;
+}
+
+.whiteboard-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.project-name {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+.auto-save-status {
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+
+.auto-saving {
+  color: #667eea;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auto-saving::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border: 2px solid #667eea;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.unsaved {
+  color: #ed8936;
+}
+
+.saved {
+  color: #38a169;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.whiteboard-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.whiteboard-textarea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #2d3748;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.whiteboard-textarea::placeholder {
+  color: #a0aec0;
+  line-height: 1.6;
+}
+
+.whiteboard-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.whiteboard-empty .empty-state {
+  text-align: center;
+  color: #718096;
+  max-width: 280px;
+}
+
+.whiteboard-empty .empty-state-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.whiteboard-empty h4 {
+  color: #4a5568;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.whiteboard-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Scrollbar styling for webkit browsers */
+.whiteboard-textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.whiteboard-textarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.whiteboard-textarea::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.whiteboard-textarea::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .project-whiteboard {
+    width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .project-whiteboard {
+    position: static;
+    width: 100%;
+    height: 300px;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    order: 3; /* Show after main content on mobile */
+  }
+  
+  .whiteboard-header {
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+  
+  .whiteboard-header h3 {
+    font-size: 1rem;
+  }
+  
+  .whiteboard-content {
+    padding: 16px;
+  }
+}
