@@ -9,7 +9,8 @@ from .config import config
 def init_database():
     """Initialize the SQLite database with required tables"""
     # Ensure parent directory exists
-    config.database_path.parent.mkdir(parents=True, exist_ok=True)
+    db_path = Path(config.database_path)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     
     conn = sqlite3.connect(config.database_path)
     cursor = conn.cursor()
@@ -56,11 +57,19 @@ def init_database():
             status TEXT NOT NULL DEFAULT 'draft',
             content TEXT,
             project_id INTEGER,
+            order_number INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (project_id) REFERENCES projects (id)
         )
     ''')
+    
+    # Add order_number column to existing prompts table (migration)
+    try:
+        cursor.execute("ALTER TABLE prompts ADD COLUMN order_number INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        # Column already exists, ignore
+        pass
     
     # Migrate existing prompts with text project to use project_id
     cursor.execute('''
@@ -81,7 +90,7 @@ def init_database():
     
     # Insert default settings
     cursor.execute('''
-        INSERT OR IGNORE INTO settings (key, value) VALUES ('app_version', '0.1.0')
+        INSERT OR IGNORE INTO settings (key, value) VALUES ('app_version', '0.1.7')
     ''')
     
     cursor.execute('''
@@ -211,9 +220,9 @@ class DatabaseManager:
                 params.append(status)
             
             if conditions:
-                query = f"{base_query} WHERE {' AND '.join(conditions)} ORDER BY p.created_at DESC"
+                query = f"{base_query} WHERE {' AND '.join(conditions)} ORDER BY p.order_number ASC, p.created_at DESC"
             else:
-                query = f"{base_query} ORDER BY p.created_at DESC"
+                query = f"{base_query} ORDER BY p.order_number ASC, p.created_at DESC"
             
             async with db.execute(query, params) as cursor:
                 rows = await cursor.fetchall()
@@ -229,10 +238,15 @@ class DatabaseManager:
                 async with db.execute("SELECT id FROM projects WHERE name = 'Default' LIMIT 1") as cursor:
                     row = await cursor.fetchone()
                     project_id = row[0] if row else None
+            
+            # Get the next order_number by finding the max order_number and adding 1
+            async with db.execute("SELECT COALESCE(MAX(order_number), 0) + 1 FROM prompts WHERE status = ?", (status,)) as cursor:
+                row = await cursor.fetchone()
+                next_order_number = row[0] if row else 1
                     
             await db.execute(
-                "INSERT INTO prompts (name, status, content, project_id) VALUES (?, ?, ?, ?)",
-                (name, status, content, project_id)
+                "INSERT INTO prompts (name, status, content, project_id, order_number) VALUES (?, ?, ?, ?, ?)",
+                (name, status, content, project_id, next_order_number)
             )
             await db.commit()
             
@@ -266,7 +280,7 @@ class DatabaseManager:
                     return dict(zip(columns, row))
     
     @staticmethod
-    async def update_prompt(prompt_id: int, name: str = None, status: str = None, content: str = None, project_id: int = None):
+    async def update_prompt(prompt_id: int, name: str = None, status: str = None, content: str = None, project_id: int = None, order_number: int = None):
         """Update a prompt in the database"""
         async with aiosqlite.connect(config.database_path) as db:
             updates = []
@@ -287,6 +301,10 @@ class DatabaseManager:
             if project_id is not None:
                 updates.append("project_id = ?")
                 params.append(project_id)
+            
+            if order_number is not None:
+                updates.append("order_number = ?")
+                params.append(order_number)
             
             if updates:
                 updates.append("updated_at = CURRENT_TIMESTAMP")

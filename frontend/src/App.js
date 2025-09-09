@@ -6,6 +6,7 @@ import PromptsSidebar from './components/PromptsSidebar';
 import PromptDetails from './components/PromptDetails';
 import ProjectEdit from './components/ProjectEdit';
 import ProjectWhiteboard from './components/ProjectWhiteboard';
+import ResizableLayout from './components/ResizableLayout';
 import './App.css';
 
 function PromptApp() {
@@ -22,25 +23,30 @@ function PromptApp() {
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
 
+  // Extract project ID from URL params, use 0 if not present (for "all projects")
+  const urlProjectId = params.projectId ? parseInt(params.projectId) : 0;
+
   // Fetch prompts and projects on component mount
   useEffect(() => {
     fetchProjects();
-    fetchPrompts();
   }, []);
+
+  // Set selected project based on URL parameter
+  useEffect(() => {
+    setSelectedProjectId(urlProjectId);
+  }, [urlProjectId]);
 
   // Fetch prompts when project selection or status filter changes
   useEffect(() => {
-    fetchPrompts();
+    if (selectedProjectId !== null) {
+      fetchPrompts();
+    }
   }, [selectedProjectId, statusFilter]);
 
   // Handle URL parameter changes
   useEffect(() => {
-    // Check for /prompt/new directly from path
-    if (location.pathname === '/prompt/new') {
-      setSelectedPrompt(null);
-      setShowNewForm(true);
-    } else if (params.promptId === 'new') {
-      // Show new prompt form
+    // Check for new prompt routes
+    if (location.pathname.endsWith('/prompt/new') || params.promptId === 'new') {
       setSelectedPrompt(null);
       setShowNewForm(true);
     } else if (params.promptId) {
@@ -66,18 +72,32 @@ function PromptApp() {
   const fetchPrompts = async () => {
     try {
       setLoading(true);
-      let url = '/api/prompts?';
-      const params = new URLSearchParams();
       
-      if (selectedProjectId) {
-        params.append('project_id', selectedProjectId);
+      // Use project-based API if we have a project ID from URL
+      let url;
+      if (selectedProjectId !== null) {
+        url = `/api/${selectedProjectId}/prompts`;
+        const params = new URLSearchParams();
+        
+        if (statusFilter && statusFilter !== 'all') {
+          params.append('status', statusFilter);
+        }
+        
+        if (params.toString()) {
+          url += '?' + params.toString();
+        }
+      } else {
+        // Fallback to legacy API
+        url = '/api/prompts?';
+        const params = new URLSearchParams();
+        
+        if (statusFilter && statusFilter !== 'all') {
+          params.append('status', statusFilter);
+        }
+        
+        url += params.toString();
       }
       
-      if (statusFilter && statusFilter !== 'all') {
-        params.append('status', statusFilter);
-      }
-      
-      url += params.toString();
       const response = await axios.get(url);
       setPrompts(response.data);
       setError(null);
@@ -90,15 +110,28 @@ function PromptApp() {
 
   const fetchPromptById = async (promptId) => {
     try {
-      const response = await axios.get(`/api/prompts/${promptId}`);
+      let url;
+      if (selectedProjectId !== null && selectedProjectId !== 0) {
+        // Use project-based API for specific projects
+        url = `/api/${selectedProjectId}/prompt/${promptId}`;
+      } else {
+        // Use legacy API for all projects (project_id = 0) or when no project selected
+        url = `/api/prompts/${promptId}`;
+      }
+      
+      const response = await axios.get(url);
       setSelectedPrompt(response.data);
       setShowNewForm(false);
       setError(null);
     } catch (err) {
       setError('Failed to fetch prompt: ' + (err.response?.data?.detail || err.message));
-      // If prompt not found, redirect to home
+      // If prompt not found, redirect to project root or home
       if (err.response?.status === 404) {
-        navigate('/');
+        if (selectedProjectId !== null && selectedProjectId !== 0) {
+          navigate(`/${selectedProjectId}`);
+        } else {
+          navigate('/');
+        }
       }
     }
   };
@@ -111,10 +144,29 @@ function PromptApp() {
         project_id: promptData.project_id || selectedProjectId
       };
       
-      const response = await axios.post('/api/prompts', promptWithProject);
+      let url;
+      let response;
+      
+      if (selectedProjectId !== null) {
+        // Use project-based API
+        url = `/api/${selectedProjectId}/prompts`;
+        response = await axios.post(url, promptWithProject);
+      } else {
+        // Use legacy API
+        url = '/api/prompts';
+        response = await axios.post(url, promptWithProject);
+      }
+      
       const newPrompt = response.data;
       setPrompts([newPrompt, ...prompts]);
-      navigate(`/prompt/${newPrompt.id}`); // Navigate to the newly created prompt
+      
+      // Navigate to the newly created prompt using appropriate URL structure
+      if (selectedProjectId !== null && selectedProjectId !== 0) {
+        navigate(`/${selectedProjectId}/prompt/${newPrompt.id}`);
+      } else {
+        navigate(`/prompt/${newPrompt.id}`);
+      }
+      
       setError(null);
       return newPrompt;
     } catch (err) {
@@ -127,7 +179,16 @@ function PromptApp() {
     try {
       if (!selectedPrompt) return;
       
-      const response = await axios.put(`/api/prompts/${selectedPrompt.id}`, promptData);
+      let url;
+      if (selectedProjectId !== null && selectedProjectId !== 0) {
+        // Use project-based API for specific projects
+        url = `/api/${selectedProjectId}/prompt/${selectedPrompt.id}`;
+      } else {
+        // Use legacy API for all projects (project_id = 0) or when no project selected
+        url = `/api/prompts/${selectedPrompt.id}`;
+      }
+      
+      const response = await axios.put(url, promptData);
       const updatedPrompt = response.data;
       
       // Update the prompts list with the updated prompt
@@ -153,13 +214,28 @@ function PromptApp() {
 
   const deletePrompt = async (promptId) => {
     try {
-      await axios.delete(`/api/prompts/${promptId}`);
+      let url;
+      if (selectedProjectId !== null && selectedProjectId !== 0) {
+        // Use project-based API for specific projects
+        url = `/api/${selectedProjectId}/prompt/${promptId}`;
+      } else {
+        // Use legacy API for all projects (project_id = 0) or when no project selected
+        url = `/api/prompts/${promptId}`;
+      }
+      
+      await axios.delete(url);
       setPrompts(prompts.filter(prompt => prompt.id !== promptId));
-      // If we deleted the selected prompt, navigate back to home
+      
+      // If we deleted the selected prompt, navigate back to appropriate home
       if (selectedPrompt && selectedPrompt.id === promptId) {
-        navigate('/');
+        if (selectedProjectId !== null && selectedProjectId !== 0) {
+          navigate(`/${selectedProjectId}`);
+        } else {
+          navigate('/');
+        }
         setSelectedPrompt(null);
       }
+      
       setSuccess('Prompt deleted successfully!');
       setError(null);
       setTimeout(() => setSuccess(null), 3000);
@@ -169,11 +245,19 @@ function PromptApp() {
   };
 
   const handleNewPrompt = () => {
-    navigate('/prompt/new');
+    if (selectedProjectId !== null && selectedProjectId !== 0) {
+      navigate(`/${selectedProjectId}/prompt/new`);
+    } else {
+      navigate('/prompt/new');
+    }
   };
 
   const handleSelectPrompt = (prompt) => {
-    navigate(`/prompt/${prompt.id}`);
+    if (selectedProjectId !== null && selectedProjectId !== 0) {
+      navigate(`/${selectedProjectId}/prompt/${prompt.id}`);
+    } else {
+      navigate(`/prompt/${prompt.id}`);
+    }
   };
 
   const handleCancelForm = () => {
@@ -186,7 +270,12 @@ function PromptApp() {
     setSelectedProjectId(projectId);
     // Clear selected prompt when changing project
     setSelectedPrompt(null);
-    navigate('/');
+    // Navigate to project-specific URL
+    if (projectId !== 0) {
+      navigate(`/${projectId}`);
+    } else {
+      navigate('/0'); // 0 means "all projects"
+    }
   };
 
   const handleNewProject = async (projectName) => {
@@ -198,7 +287,7 @@ function PromptApp() {
       setSuccess('Project created successfully!');
       setError(null);
       setTimeout(() => setSuccess(null), 3000);
-      navigate('/prompt/new');
+      navigate(`/${newProject.id}/prompt/new`);
       return newProject;
     } catch (err) {
       setError('Failed to create project: ' + (err.response?.data?.detail || err.message));
@@ -214,44 +303,58 @@ function PromptApp() {
     setStatusFilter(newStatusFilter);
   };
 
+  const handlePromptsReordered = () => {
+    // Refresh prompts after reordering
+    fetchPrompts();
+  };
+
   // Find the currently selected project
   const selectedProject = selectedProjectId ? projects.find(p => p.id === selectedProjectId) : null;
 
   return (
     <div className="App">
       <Header />
-      <PromptsSidebar 
-        prompts={prompts} 
-        onSelectPrompt={handleSelectPrompt}
-        selectedPromptId={selectedPrompt?.id}
-        onNewPrompt={handleNewPrompt}
-        loading={loading}
-        projects={projects}
-        selectedProjectId={selectedProjectId}
-        onSelectProject={handleSelectProject}
-        onNewProject={handleNewProject}
-        onEditProject={handleEditProject}
-        statusFilter={statusFilter}
-        onStatusFilterChange={handleStatusFilterChange}
-      />
-      <main className="main-content">
-        <PromptDetails
-          selectedPrompt={selectedPrompt}
-          showNewForm={showNewForm}
-          onCreatePrompt={createPrompt}
-          onUpdatePrompt={updatePrompt}
-          onDeletePrompt={deletePrompt}
-          onCancelForm={handleCancelForm}
-          error={error}
-          success={success}
-          projects={projects}
-          selectedProjectId={selectedProjectId}
-        />
-      </main>
-      <ProjectWhiteboard
-        selectedProject={selectedProject}
-        onError={setError}
-        onSuccess={setSuccess}
+      <ResizableLayout
+        leftPanel={
+          <PromptsSidebar 
+            prompts={prompts} 
+            onSelectPrompt={handleSelectPrompt}
+            selectedPromptId={selectedPrompt?.id}
+            onNewPrompt={handleNewPrompt}
+            loading={loading}
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            onNewProject={handleNewProject}
+            onEditProject={handleEditProject}
+            statusFilter={statusFilter}
+            onStatusFilterChange={handleStatusFilterChange}
+            onPromptsReordered={handlePromptsReordered}
+          />
+        }
+        mainContent={
+          <main className="main-content">
+            <PromptDetails
+              selectedPrompt={selectedPrompt}
+              showNewForm={showNewForm}
+              onCreatePrompt={createPrompt}
+              onUpdatePrompt={updatePrompt}
+              onDeletePrompt={deletePrompt}
+              onCancelForm={handleCancelForm}
+              error={error}
+              success={success}
+              projects={projects}
+              selectedProjectId={selectedProjectId}
+            />
+          </main>
+        }
+        rightPanel={
+          <ProjectWhiteboard
+            selectedProject={selectedProject}
+            onError={setError}
+            onSuccess={setSuccess}
+          />
+        }
       />
     </div>
   );
@@ -282,7 +385,11 @@ function ProjectEditApp() {
 
   const handleSelectProject = (projectId) => {
     setSelectedProjectId(projectId);
-    navigate('/');
+    if (projectId !== 0) {
+      navigate(`/${projectId}`);
+    } else {
+      navigate('/0');
+    }
   };
 
   const handleNewProject = async (projectName) => {
@@ -294,7 +401,7 @@ function ProjectEditApp() {
       setSuccess('Project created successfully!');
       setError(null);
       setTimeout(() => setSuccess(null), 3000);
-      navigate('/prompt/new');
+      navigate(`/${newProject.id}/prompt/new`);
       return newProject;
     } catch (err) {
       setError('Failed to create project: ' + (err.response?.data?.detail || err.message));
@@ -309,22 +416,29 @@ function ProjectEditApp() {
   return (
     <div className="App">
       <Header />
-      <PromptsSidebar 
-        prompts={[]} 
-        onSelectPrompt={() => {}}
-        selectedPromptId={null}
-        onNewPrompt={() => navigate('/')}
-        loading={false}
-        projects={projects}
-        selectedProjectId={selectedProjectId}
-        onSelectProject={handleSelectProject}
-        onNewProject={handleNewProject}
-        onEditProject={handleEditProject}
-        hidePrompts={true}
+      <ResizableLayout
+        leftPanel={
+          <PromptsSidebar 
+            prompts={[]} 
+            onSelectPrompt={() => {}}
+            selectedPromptId={null}
+            onNewPrompt={() => navigate('/0')}
+            loading={false}
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            onNewProject={handleNewProject}
+            onEditProject={handleEditProject}
+            hidePrompts={true}
+          />
+        }
+        mainContent={
+          <main className="main-content">
+            <ProjectEdit onProjectUpdated={fetchProjects} />
+          </main>
+        }
+        rightPanel={null}
       />
-      <main className="main-content">
-        <ProjectEdit onProjectUpdated={fetchProjects} />
-      </main>
     </div>
   );
 }
@@ -333,9 +447,17 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Legacy routes without project_id */}
         <Route path="/" element={<PromptApp />} />
         <Route path="/prompt/new" element={<PromptApp />} />
         <Route path="/prompt/:promptId" element={<PromptApp />} />
+        
+        {/* New project-based routes */}
+        <Route path="/:projectId" element={<PromptApp />} />
+        <Route path="/:projectId/prompt/new" element={<PromptApp />} />
+        <Route path="/:projectId/prompt/:promptId" element={<PromptApp />} />
+        
+        {/* Project edit route */}
         <Route path="/project/:projectId" element={<ProjectEditApp />} />
       </Routes>
     </Router>

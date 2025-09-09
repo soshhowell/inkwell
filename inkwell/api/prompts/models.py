@@ -16,6 +16,7 @@ class PromptUpdate(BaseModel):
     status: Optional[str] = None
     content: Optional[str] = None
     project_id: Optional[int] = None
+    order_number: Optional[int] = None
 
 
 class Prompt(BaseModel):
@@ -25,5 +26,6 @@ class Prompt(BaseModel):
     content: Optional[str] = None
     project_id: Optional[int] = None
     project_name: Optional[str] = None
+    order_number: int = 0
     created_at: str
     updated_at: str

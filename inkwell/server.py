@@ -15,7 +15,7 @@ from .api import discover_and_register_routers
 app = FastAPI(
     title="Inkwell API",
     description="Backend API for Inkwell application",
-    version="0.1.0"
+    version="0.1.7"
 )
 
 # Add CORS middleware for development

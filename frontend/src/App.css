@@ -4,15 +4,11 @@
 }
 
 .main-content {
-  margin-left: 300px; /* Updated for wider sidebar */
-  margin-right: 350px; /* Space for whiteboard pane */
-  margin-top: 60px;
   padding: 24px;
-  min-height: calc(100vh - 60px);
+  min-height: 100%;
 }
 
 .page-content {
-  max-width: 1200px;
 }
 
 .page-header {
@@ -93,12 +89,10 @@
 
 /* Prompt Details styles */
 .prompt-details {
-  max-width: 800px;
 }
 
 /* Keep legacy item styles for backward compatibility */
 .item-details {
-  max-width: 800px;
 }
 
 .item-details-header {
@@ -345,6 +339,32 @@
   flex: 2; /* Make name field wider */
 }
 
+/* Prompt name input in header */
+.prompt-name-input {
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  background: white;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.prompt-name-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.prompt-name-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Auto-save status */
 .form-actions {
   display: flex;
@@ -392,16 +412,8 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 1200px) {
-  .main-content {
-    margin-right: 300px; /* Narrower whiteboard on medium screens */
-  }
-}
-
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
-    margin-right: 0; /* No fixed whiteboard on mobile - it becomes part of content flow */
     padding: 16px;
   }
   

@@ -47,9 +47,6 @@ const ProjectWhiteboard = ({ selectedProject, onError, onSuccess }) => {
       });
       setLastSavedContent(content);
       setHasUnsavedChanges(false);
-      if (onSuccess) {
-        onSuccess('Whiteboard saved');
-      }
     } catch (error) {
       console.error('Failed to save whiteboard:', error);
       if (onError) {
@@ -58,7 +55,40 @@ const ProjectWhiteboard = ({ selectedProject, onError, onSuccess }) => {
     } finally {
       setAutoSaving(false);
     }
-  }, [selectedProject, lastSavedContent, onError, onSuccess]);
+  }, [selectedProject, lastSavedContent, onError]);
+
+  // Manual save function for keyboard shortcuts
+  const handleManualSave = useCallback(async () => {
+    if (!selectedProject) return;
+    
+    // Cancel any pending auto-save to avoid duplicate saves
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+      autoSaveTimeoutRef.current = null;
+    }
+    
+    // Trigger immediate save with current content
+    await triggerAutoSave(whiteboardContent);
+  }, [selectedProject, whiteboardContent, triggerAutoSave]);
+
+  // Keyboard shortcut handler
+  const handleKeyDown = useCallback((e) => {
+    // Check for Cmd+S (Mac) or Ctrl+S (Windows/Linux)
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+      e.preventDefault(); // Prevent browser's default save behavior
+      handleManualSave();
+    }
+  }, [handleManualSave]);
+
+  // Add keyboard event listener
+  useEffect(() => {
+    // Add event listener to document for global keyboard shortcuts
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   // Sync check function (polls for updates from other windows)
   const checkForUpdates = useCallback(async () => {

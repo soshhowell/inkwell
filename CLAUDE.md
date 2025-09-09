@@ -96,3 +96,11 @@ tail -f .dev_logs/frontend.log   # Monitor frontend logs
 - Ctrl+C to stop or external process manager
 - when I say "push" do a git add . (not just what you think is changed), commit with message, and push
 - don't need to make changes backwards compatible
+
+## Version Management
+
+When incrementing version numbers, update ALL of these locations:
+1. `pyproject.toml` - line 7: `version = "X.Y.Z"`
+2. `inkwell/__init__.py` - line 5: `__version__ = "X.Y.Z"`
+3. `inkwell/server.py` - line 18: `version="X.Y.Z"` (FastAPI app version)
+4. `inkwell/database.py` - line 93: `VALUES ('app_version', 'X.Y.Z')` (default database setting)

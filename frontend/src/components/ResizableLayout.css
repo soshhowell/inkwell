@@ -1,0 +1,90 @@
+.resizable-layout {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.resizable-left-panel {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  height: calc(100vh - 60px);
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  z-index: 999;
+  transition: width 0.1s ease-out;
+}
+
+.resizable-right-panel {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  height: calc(100vh - 60px);
+  background: white;
+  border-left: 1px solid #e0e0e0;
+  z-index: 998;
+  transition: width 0.1s ease-out;
+}
+
+.resizable-main-content {
+  margin-top: 60px;
+  padding: 24px;
+  min-height: calc(100vh - 60px);
+  transition: margin 0.1s ease-out;
+}
+
+.resize-handle {
+  position: fixed;
+  top: 60px;
+  width: 4px;
+  height: calc(100vh - 60px);
+  background: transparent;
+  cursor: col-resize;
+  z-index: 1000;
+  transition: background-color 0.2s ease;
+}
+
+.resize-handle:hover,
+.resize-handle.dragging {
+  background-color: #667eea;
+}
+
+.resize-handle-left {
+  /* Position set inline via style prop */
+}
+
+.resize-handle-right {
+  /* Position set inline via style prop */
+}
+
+/* Visual feedback during drag */
+body.dragging {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+  .resizable-left-panel,
+  .resizable-right-panel {
+    position: static;
+    width: 100% !important;
+    height: auto;
+    border: none;
+  }
+  
+  .resizable-main-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 16px;
+  }
+  
+  .resize-handle {
+    display: none;
+  }
+  
+  .resizable-layout {
+    display: flex;
+    flex-direction: column;
+  }
+}
