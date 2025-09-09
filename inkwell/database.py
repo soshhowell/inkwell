@@ -90,7 +90,7 @@ def init_database():
     
     # Insert default settings
     cursor.execute('''
-        INSERT OR IGNORE INTO settings (key, value) VALUES ('app_version', '0.1.8')
+        INSERT OR IGNORE INTO settings (key, value) VALUES ('app_version', '0.1.9')
     ''')
     
     cursor.execute('''
